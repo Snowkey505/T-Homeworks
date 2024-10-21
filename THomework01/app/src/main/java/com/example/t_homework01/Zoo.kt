@@ -9,8 +9,7 @@ interface Animal{
 
 enum class BiteType {
     STRAIGHT,
-    OVERBYTE,
-    UNDERBYTE
+    OVERBYTE
 }
 
 enum class BehaviorType {
@@ -26,34 +25,36 @@ interface Cat: Animal{
     val behaviorType: BehaviorType
 }
 
-class Husky(override val weight: Double, override val age: Int, override val biteType: BiteType) : Dog {
+class Husky(override val weight: Double, override val age: Int) : Dog {
+    override val biteType: BiteType = BiteType.STRAIGHT
     override fun foodRecommendation() = "Корм для хаски возрастом $age лет и весом $weight кг."
     override fun toyRecommendation() = "Игрушки для хаски с типом прикуса: $biteType."
 }
 
-class Corgi(override val weight: Double, override val age: Int, override val biteType: BiteType) : Dog {
+class Corgi(override val weight: Double, override val age: Int) : Dog {
+    override val biteType: BiteType = BiteType.OVERBYTE
     override fun foodRecommendation() = "Корм для хаски возрастом $age лет и весом $weight кг."
     override fun toyRecommendation() = "Игрушки для хаски с типом прикуса: $biteType."
 }
 
-class ScottishFold(override val weight: Double, override val age: Int, override val behaviorType: BehaviorType) : Cat {
+class ScottishFold(override val weight: Double, override val age: Int) : Cat {
+    override val behaviorType: BehaviorType = BehaviorType.PASSIVE
     override fun foodRecommendation() = "Корм для шотландских кошек возрастом $age лет и весом $weight кг."
     override fun toyRecommendation() = "Игрушки для шотландских кошек с типом поведения: $behaviorType."
 }
 
-class Siamese(override val weight: Double, override val age: Int, override val behaviorType: BehaviorType) : Cat {
+class Siamese(override val weight: Double, override val age: Int) : Cat {
+    override val behaviorType: BehaviorType = BehaviorType.ACTIVE
     override fun foodRecommendation() = "Корм для сиамских кошек возрастом $age лет и весом $weight кг."
     override fun toyRecommendation() = "Игрушки для сиамских кошек с типом поведения: $behaviorType."
 }
 
 class Zoo {
-    fun animalType(breed: String) : String?{
-        return when (breed){
-            "Husky" -> "Dog"
-            "Corgy" -> "Dog"
-            "ScottishFold" -> "Cat"
-            "Siamese" -> "Cat"
-            else -> null
-        }
+    fun animalType(animal: Animal) : String?{
+        if (animal is Dog)
+            return "Dog"
+        else if (animal is Cat)
+            return "Cat"
+        return null
     }
 }
