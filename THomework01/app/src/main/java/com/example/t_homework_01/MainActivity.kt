@@ -30,18 +30,30 @@ import androidx.compose.ui.unit.sp
 import com.example.t_homework_01.data.Joke
 
 class MainActivity : ComponentActivity() {
-    private lateinit var jokes: MutableList<Joke>
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        jokes = mutableListOf(
-            Joke("Holiday", "What does Santa suffer from if he gets stuck in a chimney?", "Claustrophobia!"),
-            Joke("Animals", "Why don't scientists trust atoms?", "Because they make up everything!"),
+        val jokes: MutableList<Joke> = mutableListOf(
+            Joke(
+                "Holiday",
+                "What does Santa suffer from if he gets stuck in a chimney?",
+                "Claustrophobia!"
+            ),
+            Joke(
+                "Animals",
+                "Why don't scientists trust atoms?",
+                "Because they make up everything!"
+            ),
             Joke("Technology", "Why was the math book sad?", "It had too many problems."),
-            Joke("School", "Why did the student eat his homework?", "Because the teacher told him it was a piece of cake!"),
+            Joke(
+                "School",
+                "Why did the student eat his homework?",
+                "Because the teacher told him it was a piece of cake!"
+            ),
             Joke("Nature", "How do trees access the internet?", "They log in!"),
             Joke("Weather", "What does a cloud wear under his raincoat?", "Thunderwear!"),
-            Joke("Sports", "Why are basketball courts always wet?", "Because the players dribble!")
+            Joke("Sports", "Why are basketball courts always wet?", "Because the players dribble!"),
+
         )
 
         setContent {
@@ -52,15 +64,25 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun JokesList(data: MutableList<Joke>) {
-    val colorsBackground = listOf(Color(255, 255, 100),
-        Color(255, 178, 102))
+    val colorsBackground = listOf(
+        Color(255, 255, 100),
+        Color(255, 178, 102)
+    )
     val brushBackground = Brush.verticalGradient(colors = colorsBackground)
-    Box (modifier = Modifier.fillMaxSize().background(brush = brushBackground,
-        shape = RectangleShape)) {
-        LazyVerticalGrid(
-            modifier = Modifier.padding(top = 10.dp, start = 10.dp, end = 10.dp).fillMaxSize(),
-            columns = GridCells.Fixed(1)
-        ) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = brushBackground,
+                shape = RectangleShape
+            )
+    ) {
+        LazyColumn (
+            modifier = Modifier
+                .padding(top = 10.dp, start = 10.dp, end = 10.dp)
+                .fillMaxSize(),
+        )
+        {
             items(data) { JokeItem(it) }
         }
     }
@@ -73,10 +95,7 @@ fun JokeItem(joke: Joke) {
             .fillMaxSize()
             .padding(2.dp)
             .shadow(shape = RoundedCornerShape(10.dp), elevation = 20.dp)
-            .background(Color(253, 246, 235), shape = RoundedCornerShape(10.dp)).border(
-                width = 2.dp, Color(25, 12, 0),
-                shape = RoundedCornerShape(10.dp)
-            )
+            .background(Color(253, 246, 235), shape = RoundedCornerShape(10.dp))
     ) {
         Column(
             modifier = Modifier
