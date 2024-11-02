@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -27,6 +29,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -42,7 +45,7 @@ class JokeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val jokeCategory = intent?.getStringExtra("category") ?: "Unknown Category"
+        val jokeCategory = intent?.getStringExtra("category") ?: "No Category"
         val jokeQuestion = intent?.getStringExtra("question") ?: "No Question"
         val jokeAnswer = intent?.getStringExtra("answer") ?: "No Answer"
 
@@ -69,42 +72,52 @@ fun JokeDetails(category: String, question: String, answer: String) {
     ) {
         Card(
             modifier = Modifier
-                .fillMaxSize()
+                .wrapContentHeight()
                 .padding(20.dp),
             colors = CardDefaults.cardColors(WhiteSoft),
             elevation = CardDefaults.cardElevation(2.dp)
         ) {
             Column(
                 modifier = Modifier
+                    .wrapContentHeight()
                     .padding(5.dp)
             )
             {
                 Text(
                     text = category,
                     fontSize = 20.sp,
-                    color = Color.Blue
+                    color = Color.Blue,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(10.dp))
-                Column(
+                LazyColumn(
                     modifier = Modifier
-                        .fillMaxSize()
+                        .wrapContentHeight()
                         .border(width = 2.dp, color = OrangeSoft, shape = RoundedCornerShape(10.dp))
                         .background(Color.White)
                 ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(5.dp),
-                        text = question,
-                        fontSize = 30.sp
-                    )
-                    Spacer(modifier = Modifier.height(20.dp))
-                    Text(
-                        modifier = Modifier
-                            .padding(5.dp)
-                            .align(Alignment.End),
-                        text = answer,
-                        fontSize = 40.sp
-                    )
+                    item {
+                        Text(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(5.dp),
+                            text = question,
+                            fontSize = 30.sp
+                        )
+                    }
+
+                    item {
+                        Text(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(5.dp)
+                                .align(Alignment.End),
+                            text = answer,
+                            fontSize = 40.sp
+                        )
+                    }
+
                 }
 
             }

@@ -58,7 +58,7 @@ class MainActivity : ComponentActivity() {
                 "Because the teacher told him it was a piece of cake!"
             ),
             Joke("Nature", "How do trees access the internet?", "They log in!"),
-            Joke("Weather", "What does a cloud wear under his raincoat?", "Thunderwear!"),
+            Joke("Weather", "What does a cloud ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssswear under his raincoat?", "Thunderwear!"),
             Joke("Sports", "Why are basketball courts always wet?", "Because the players dribble!"),
 
         )
@@ -107,9 +107,9 @@ fun JokeItem(joke: Joke) {
             .background(WhiteSoft, shape = RoundedCornerShape(10.dp))
             .clickable {
                 val intent = Intent(context, JokeActivity::class.java).apply {
-                    putExtra("category", joke.category)
-                    putExtra("question", joke.question)
-                    putExtra("answer", joke.answer)
+                    putExtra("category", joke.category ?: "No Category")
+                    putExtra("question", joke.question ?: "No Question")
+                    putExtra("answer", joke.answer ?: "No Answer")
                 }
                 context.startActivity(intent)
             }
