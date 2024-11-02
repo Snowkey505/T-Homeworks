@@ -1,4 +1,4 @@
-package com.example.t_homework01
+package com.example.t_homework_01
 
 import org.junit.Test
 
