@@ -1,7 +1,9 @@
 package com.example.t_homework_01
 
-import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -17,43 +19,72 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.fragment.app.Fragment
 import com.example.t_homework_01.data.Joke
 import com.example.t_homework_01.ui.theme.OrangeSoft
 import com.example.t_homework_01.ui.theme.WhiteSoft
 import com.example.t_homework_01.ui.theme.YellowSoft
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
+
+    private lateinit var jokeViewModel: JokeViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
 
-        val jokes: MutableList<Joke> = mutableListOf(
-            Joke(
-                "Holiday",
-                "What does Santa suffer from if he gets stuck in a chimney?",
-                "Claustrophobia!"
-            ),
-            Joke(
-                "Animals",
-                "Why don't scientists trust atoms?",
-                "Because they make up everything!"
-            ),
-            Joke("Technology", "Why was the math book sad?", "It had too many problems."),
-            Joke(
-                "School",
-                "Why did the student eat his homework?",
-                "Because the teacher told him it was a piece of cake!"
-            ),
-            Joke("Nature", "How do trees access the internet?", "They log in!"),
-            Joke("Weather", "What does a cloud ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssswear under his raincoat?", "Thunderwear!"),
-            Joke("Sports", "Why are basketball courts always wet?", "Because the players dribble!"),
-        )
+        jokeViewModel = ViewModelProvider(this).get(JokeViewModel::class.java)
 
-        setContent {
-            JokesList(jokes)
+        if (savedInstanceState == null) {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, JokesFragment())
+                .commit()
+        }
+    }
+}
+
+class JokesFragment : Fragment() {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        return ComposeView(requireContext()).apply {
+            setContent {
+                val jokes: MutableList<Joke> = mutableListOf(
+                    Joke(
+                        "Holiday",
+                        "What does Santa suffer from if he gets stuck in a chimney?",
+                        "Claustrophobia!"
+                    ),
+                    Joke(
+                        "Animals",
+                        "Why don't scientists trust atoms?",
+                        "Because they make up everything!"
+                    ),
+                    Joke("Technology", "Why was the math book sad?", "It had too many problems."),
+                    Joke(
+                        "School",
+                        "Why did the student eat his homework?",
+                        "Because the teacher told him it was a piece of cake!"
+                    ),
+                    Joke("Nature", "How do trees access the internet?", "They log in!"),
+                    Joke("Weather", "What does a cloud wear under his raincoat?", "Thunderwear!"),
+                    Joke(
+                        "Sports",
+                        "Why are basketball courts always wet?",
+                        "Because the players dribble!"
+                    )
+                )
+                JokesList(jokes)
+            }
         }
     }
 }
@@ -73,7 +104,7 @@ fun JokesList(data: MutableList<Joke>) {
                 shape = RectangleShape
             )
     ) {
-        LazyColumn (
+        LazyColumn(
             modifier = Modifier
                 .padding(top = 10.dp, start = 10.dp, end = 10.dp)
                 .fillMaxSize()
@@ -87,6 +118,7 @@ fun JokesList(data: MutableList<Joke>) {
 @Composable
 fun JokeItem(joke: Joke) {
     val context = LocalContext.current
+    val activity = context as AppCompatActivity
 
     Box(
         modifier = Modifier
@@ -95,7 +127,19 @@ fun JokeItem(joke: Joke) {
             .shadow(shape = RoundedCornerShape(10.dp), elevation = 20.dp)
             .background(WhiteSoft, shape = RoundedCornerShape(10.dp))
             .clickable {
-                JokeActivity.createActivity(context, joke)
+                val bundle = Bundle().apply {
+                    putString("category", joke.category)
+                    putString("question", joke.question)
+                    putString("answer", joke.answer)
+                }
+                val jokeFragment = JokeFragment().apply {
+                    arguments = bundle
+                }
+
+                activity.supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, jokeFragment)
+                    .addToBackStack(null)
+                    .commit()
             }
     ) {
         Column(
