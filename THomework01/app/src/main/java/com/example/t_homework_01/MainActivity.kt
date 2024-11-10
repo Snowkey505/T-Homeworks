@@ -1,33 +1,30 @@
 package com.example.t_homework_01
 
+import android.content.Intent
 import android.os.Bundle
-import android.preference.PreferenceActivity.Header
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.t_homework_01.data.Joke
+import com.example.t_homework_01.ui.theme.OrangeSoft
+import com.example.t_homework_01.ui.theme.WhiteSoft
+import com.example.t_homework_01.ui.theme.YellowSoft
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,9 +48,8 @@ class MainActivity : ComponentActivity() {
                 "Because the teacher told him it was a piece of cake!"
             ),
             Joke("Nature", "How do trees access the internet?", "They log in!"),
-            Joke("Weather", "What does a cloud wear under his raincoat?", "Thunderwear!"),
+            Joke("Weather", "What does a cloud ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssswear under his raincoat?", "Thunderwear!"),
             Joke("Sports", "Why are basketball courts always wet?", "Because the players dribble!"),
-
         )
 
         setContent {
@@ -65,8 +61,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun JokesList(data: MutableList<Joke>) {
     val colorsBackground = listOf(
-        Color(255, 255, 100),
-        Color(255, 178, 102)
+        YellowSoft,
+        OrangeSoft
     )
     val brushBackground = Brush.verticalGradient(colors = colorsBackground)
     Box(
@@ -80,7 +76,7 @@ fun JokesList(data: MutableList<Joke>) {
         LazyColumn (
             modifier = Modifier
                 .padding(top = 10.dp, start = 10.dp, end = 10.dp)
-                .fillMaxSize(),
+                .fillMaxSize()
         )
         {
             items(data) { JokeItem(it) }
@@ -90,12 +86,17 @@ fun JokesList(data: MutableList<Joke>) {
 
 @Composable
 fun JokeItem(joke: Joke) {
+    val context = LocalContext.current
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(2.dp)
             .shadow(shape = RoundedCornerShape(10.dp), elevation = 20.dp)
-            .background(Color(253, 246, 235), shape = RoundedCornerShape(10.dp))
+            .background(WhiteSoft, shape = RoundedCornerShape(10.dp))
+            .clickable {
+                JokeActivity.createActivity(context, joke)
+            }
     ) {
         Column(
             modifier = Modifier
