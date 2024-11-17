@@ -4,33 +4,48 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Text
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 
 class JokeFragment : Fragment() {
+    private val jokeViewModel: JokeViewModel by activityViewModels()
+    private var jokeId: String? = null
 
-    private val jokeViewModel: JokeViewModel by viewModels()
+    companion object {
+        private const val ARG_JOKE_ID = "joke_id"
+
+        fun newInstance(jokeId: String): JokeFragment {
+            val fragment = JokeFragment()
+            val args = Bundle()
+            args.putString(ARG_JOKE_ID, jokeId)
+            fragment.arguments = args
+            return fragment
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        val jokeCategory = arguments?.getString("category") ?: "No Category"
-        val jokeQuestion = arguments?.getString("question") ?: "No Question"
-        val jokeAnswer = arguments?.getString("answer") ?: "No Answer"
-
-        jokeViewModel.loadJokeData(jokeCategory, jokeQuestion, jokeAnswer)
+    ): View? {
+        jokeId = arguments?.getString(ARG_JOKE_ID)
+        val joke = jokeId?.let { jokeViewModel.getJokeById(it) }
 
         return ComposeView(requireContext()).apply {
             setContent {
-                val category by jokeViewModel.category.observeAsState("No Category")
-                val question by jokeViewModel.question.observeAsState("No Question")
-                val answer by jokeViewModel.answer.observeAsState("No Answer")
-
-                JokeDetails(category, question, answer)
+                if (joke != null) {
+                    JokeDetails(
+                        category = joke.category,
+                        question = joke.question,
+                        answer = joke.answer
+                    )
+                } else {
+                    Text("Шутка не найдена", modifier = Modifier.fillMaxSize(), color = Color.Black)
+                }
             }
         }
     }
