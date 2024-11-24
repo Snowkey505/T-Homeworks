@@ -40,6 +40,9 @@ import com.example.t_homework_01.ui.theme.OrangeSoft
 import com.example.t_homework_01.ui.theme.WhiteSoft
 import com.example.t_homework_01.ui.theme.YellowSoft
 
+private val colorsBackground = listOf(YellowSoft, OrangeSoft)
+private val brushBackground = Brush.verticalGradient(colors = colorsBackground)
+
 class JokesFragment : Fragment() {
     private val jokeViewModel: JokeViewModel by activityViewModels()
 
@@ -57,18 +60,17 @@ class JokesFragment : Fragment() {
                     jokes = jokes,
                     isLoading = isLoading,
                     onAddJokeClick = {
-                        val intent = Intent(requireContext(), AddJokeActivity::class.java)
-                        startActivity(intent)
+                        parentFragmentManager.beginTransaction()
+                            .replace(R.id.fragment_container, AddJokeFragment.newInstance())
+                            .addToBackStack(null)
+                            .commit()
                     }
                 )
             }
         }
     }
-    override fun onResume() {
-        super.onResume()
-        jokeViewModel.loadJokes()
-    }
 }
+
 
 @Composable
 fun JokesList(
@@ -76,8 +78,6 @@ fun JokesList(
     isLoading: Boolean,
     onAddJokeClick: () -> Unit
 ) {
-    val colorsBackground = listOf(YellowSoft, OrangeSoft)
-    val brushBackground = Brush.verticalGradient(colors = colorsBackground)
 
     Box(
         modifier = Modifier
@@ -85,23 +85,9 @@ fun JokesList(
             .background(brush = brushBackground)
     ) {
         when {
-            isLoading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            jokes.isEmpty() -> {
-                Text(
-                    text = "Шутки вышли из чата, добавьте новую!",
-                    modifier = Modifier.align(Alignment.Center),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color.Black
-                )
-            }
-
-            else -> LazyColumn(
-                modifier = Modifier
-                    .padding(top = 10.dp, start = 10.dp, end = 10.dp)
-                    .fillMaxSize()
-            ) {
-                items(jokes) { JokeItem(it) }
-            }
+            isLoading -> Loader(modifier = Modifier.align(Alignment.Center))
+            jokes.isEmpty() -> JokesEmpty(modifier = Modifier.align(Alignment.Center))
+            else -> JokesList(jokes)
         }
 
         FloatingActionButton(
@@ -112,6 +98,34 @@ fun JokesList(
         ) {
             Text("+", color = Color.Black)
         }
+    }
+}
+
+@Composable
+fun Loader(modifier: Modifier)
+{
+    CircularProgressIndicator(modifier)
+}
+
+@Composable
+fun JokesEmpty(modifier: Modifier)
+{
+    Text(
+        text = "Шутки вышли из чата, добавьте новую!",
+        modifier,
+        style = MaterialTheme.typography.bodyLarge,
+        color = Color.Black
+    )
+}
+
+@Composable
+fun JokesList(jokes: List<Joke>){
+    LazyColumn(
+        modifier = Modifier
+            .padding(top = 10.dp, start = 10.dp, end = 10.dp)
+            .fillMaxSize()
+    ) {
+        items(jokes) { JokeItem(it) }
     }
 }
 

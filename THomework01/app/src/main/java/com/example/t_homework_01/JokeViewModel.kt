@@ -30,10 +30,9 @@ class JokeViewModel : ViewModel() {
     }
 
     fun addJoke(joke: Joke) {
-        val updatedJokes = _jokes.value.orEmpty() + joke
-        Log.d("JokeViewModel", "Добавлена шутка: $joke")
-        _jokes.value = updatedJokes
         JokeRepository.addJoke(joke)
+        _jokes.value = JokeRepository.getJokes()
+        Log.d("JokeViewModel", "Добавлена шутка: $joke")
     }
 
     fun getJokeById(id: String): Joke? {

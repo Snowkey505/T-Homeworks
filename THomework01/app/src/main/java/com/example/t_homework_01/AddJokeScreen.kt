@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -19,17 +20,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import com.example.t_homework_01.data.Joke
 import com.example.t_homework_01.ui.theme.OrangeSoft
 import com.example.t_homework_01.ui.theme.YellowSoft
 
+private val colorsBackground = listOf(YellowSoft, OrangeSoft)
+private val brushBackground = Brush.verticalGradient(colors = colorsBackground)
+
 @Composable
-fun AddJokeScreen(onJokeAdded: (Joke) -> Unit) {
-    var category by remember { mutableStateOf("") }
-    var question by remember { mutableStateOf("") }
-    var answer by remember { mutableStateOf("") }
-    val colorsBackground = listOf(YellowSoft, OrangeSoft)
-    val brushBackground = Brush.verticalGradient(colors = colorsBackground)
+fun AddJokeScreen(
+    viewModel: AddJokeViewModel,
+    onJokeAdded: (Joke) -> Unit
+) {
+    val category by viewModel.category.observeAsState("")
+    val question by viewModel.question.observeAsState("")
+    val answer by viewModel.answer.observeAsState("")
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -39,21 +48,21 @@ fun AddJokeScreen(onJokeAdded: (Joke) -> Unit) {
     ) {
         TextField(
             value = category,
-            onValueChange = { category = it },
+            onValueChange = { viewModel.updateCategory(it) },
             label = { Text("Категория") },
             modifier = Modifier.fillMaxWidth()
         )
 
         TextField(
             value = question,
-            onValueChange = { question = it },
+            onValueChange = { viewModel.updateQuestion(it) },
             label = { Text("Вопрос") },
             modifier = Modifier.fillMaxWidth()
         )
 
         TextField(
             value = answer,
-            onValueChange = { answer = it },
+            onValueChange = { viewModel.updateAnswer(it) },
             label = { Text("Ответ") },
             modifier = Modifier.fillMaxWidth()
         )
@@ -61,12 +70,8 @@ fun AddJokeScreen(onJokeAdded: (Joke) -> Unit) {
         Button(
             colors = ButtonDefaults.buttonColors(Color.White),
             onClick = {
-                if (category.isNotBlank() && question.isNotBlank() && answer.isNotBlank()) {
-                    val newJoke = Joke(
-                        category = category,
-                        question = question,
-                        answer = answer
-                    )
+                if (viewModel.isInputValid()) {
+                    val newJoke = viewModel.getNewJoke()
                     onJokeAdded(newJoke)
                 }
             },
@@ -77,5 +82,43 @@ fun AddJokeScreen(onJokeAdded: (Joke) -> Unit) {
                 color = Color.Black
             )
         }
+    }
+}
+
+
+class AddJokeViewModel : ViewModel() {
+    private val _category = MutableLiveData("")
+    val category: LiveData<String> = _category
+
+    private val _question = MutableLiveData("")
+    val question: LiveData<String> = _question
+
+    private val _answer = MutableLiveData("")
+    val answer: LiveData<String> = _answer
+
+    fun updateCategory(newCategory: String) {
+        _category.value = newCategory
+    }
+
+    fun updateQuestion(newQuestion: String) {
+        _question.value = newQuestion
+    }
+
+    fun updateAnswer(newAnswer: String) {
+        _answer.value = newAnswer
+    }
+
+    fun isInputValid(): Boolean {
+        return !_category.value.isNullOrBlank() &&
+                !_question.value.isNullOrBlank() &&
+                !_answer.value.isNullOrBlank()
+    }
+
+    fun getNewJoke(): Joke {
+        return Joke(
+            category = _category.value ?: "",
+            question = _question.value ?: "",
+            answer = _answer.value ?: ""
+        )
     }
 }

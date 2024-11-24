@@ -28,24 +28,26 @@ import com.example.t_homework_01.ui.theme.WhiteSoft
 import com.example.t_homework_01.ui.theme.YellowSoft
 import androidx.compose.ui.Alignment
 
-@Preview(showSystemUi = true)
+private val colorsBackground = listOf(YellowSoft, OrangeSoft)
+private val brushBackground = Brush.verticalGradient(colors = colorsBackground)
+
 @Composable
-fun JokeDetails(
-    category: String = "Category",
-    question: String = "Is it a question?",
-    answer: String = "Yes!"
-) {
-    val colorsBackground = listOf(
-        YellowSoft,
-        OrangeSoft
+@Preview(showSystemUi = true)
+fun JokeDetailsPreview(){
+    JokeDetails(
+        category = "Category",
+        question = "Is it a question?",
+        answer = "Yes!"
     )
-    val brushBackground = Brush.verticalGradient(colors = colorsBackground)
+}
+
+@Composable
+fun JokeDetails(category: String, question: String, answer: String) {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(
-                brush = brushBackground,
-                shape = RectangleShape
+                brush = brushBackground
             )
     ) {
         Card(
