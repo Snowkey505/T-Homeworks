@@ -18,7 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -37,12 +36,18 @@ fun JokeDetailsPreview(){
     JokeDetails(
         category = "Category",
         question = "Is it a question?",
-        answer = "Yes!"
+        answer = "Yes!",
+        source = "From Network"
     )
 }
 
 @Composable
-fun JokeDetails(category: String, question: String, answer: String) {
+fun JokeDetails(
+    category: String,
+    question: String,
+    answer: String,
+    source: String
+) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -71,6 +76,7 @@ fun JokeDetails(category: String, question: String, answer: String) {
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(10.dp))
+
                 LazyColumn(
                     modifier = Modifier
                         .wrapContentHeight()
@@ -98,6 +104,13 @@ fun JokeDetails(category: String, question: String, answer: String) {
                         )
                     }
                 }
+
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = "Source: $source",
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
             }
         }
     }

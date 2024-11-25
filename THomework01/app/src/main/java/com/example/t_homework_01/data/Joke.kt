@@ -6,5 +6,7 @@ data class Joke(
     val id: String = UUID.randomUUID().toString(),
     val category: String,
     val question: String,
-    val answer: String
+    val answer: String,
+    val isFromNetwork: Boolean = false
 )
+

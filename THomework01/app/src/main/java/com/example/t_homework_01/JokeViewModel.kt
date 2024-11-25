@@ -6,37 +6,40 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.t_homework_01.data.Joke
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class JokeViewModel : ViewModel() {
-    private val _jokes = MutableLiveData<List<Joke>>(emptyList())
-    val jokes: LiveData<List<Joke>> = _jokes
+    private val _localJokes = MutableLiveData<List<Joke>>(emptyList())
+    val localJokes: LiveData<List<Joke>> = _localJokes
+
+    private val _networkJokes = MutableLiveData<List<Joke>>(emptyList())
+    val networkJokes: LiveData<List<Joke>> = _networkJokes
 
     private val _isLoading = MutableLiveData(false)
     val isLoading: LiveData<Boolean> = _isLoading
 
     init {
-        loadJokes()
+        loadNetworkJokes()
     }
 
-    fun loadJokes() {
+    fun loadNetworkJokes() {
         viewModelScope.launch {
             _isLoading.value = true
-            delay(1000)
-            _jokes.value = JokeRepository.getJokes()
-            _isLoading.value = false
+            try {
+                val networkJokes = JokeRepository.getJokesFromNetwork()
+                _networkJokes.value = networkJokes
+            } catch (e: Exception) {
+                Log.e("JokeViewModel", "Error loading network jokes: ${e.message}")
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 
     fun addJoke(joke: Joke) {
-        JokeRepository.addJoke(joke)
-        _jokes.value = JokeRepository.getJokes()
-        Log.d("JokeViewModel", "Добавлена шутка: $joke")
-    }
-
-    fun getJokeById(id: String): Joke? {
-        return _jokes.value?.find { it.id == id }
+        viewModelScope.launch {
+            val currentJokes = _localJokes.value.orEmpty()
+            _localJokes.value = currentJokes + joke
+        }
     }
 }
-

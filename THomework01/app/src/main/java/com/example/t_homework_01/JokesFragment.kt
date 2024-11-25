@@ -1,6 +1,5 @@
 package com.example.t_homework_01
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +9,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -44,6 +44,7 @@ private val colorsBackground = listOf(YellowSoft, OrangeSoft)
 private val brushBackground = Brush.verticalGradient(colors = colorsBackground)
 
 class JokesFragment : Fragment() {
+
     private val jokeViewModel: JokeViewModel by activityViewModels()
 
     override fun onCreateView(
@@ -53,15 +54,25 @@ class JokesFragment : Fragment() {
     ): View {
         return ComposeView(requireContext()).apply {
             setContent {
-                val jokes by jokeViewModel.jokes.observeAsState(emptyList())
+                val localJokes by jokeViewModel.localJokes.observeAsState(emptyList())
+                val networkJokes by jokeViewModel.networkJokes.observeAsState(emptyList())
                 val isLoading by jokeViewModel.isLoading.observeAsState(false)
 
+                val allJokes = localJokes + networkJokes
+
                 JokesList(
-                    jokes = jokes,
+                    jokes = allJokes,
                     isLoading = isLoading,
                     onAddJokeClick = {
                         parentFragmentManager.beginTransaction()
-                            .replace(R.id.fragment_container, AddJokeFragment.newInstance())
+                            .replace(R.id.fragment_container, AddJokeFragment())
+                            .addToBackStack(null)
+                            .commit()
+                    },
+                    onJokeClick = { jokeId ->
+                        val jokeFragment = JokeFragment.newInstance(jokeId)
+                        parentFragmentManager.beginTransaction()
+                            .replace(R.id.fragment_container, jokeFragment)
                             .addToBackStack(null)
                             .commit()
                     }
@@ -76,18 +87,18 @@ class JokesFragment : Fragment() {
 fun JokesList(
     jokes: List<Joke>,
     isLoading: Boolean,
-    onAddJokeClick: () -> Unit
+    onAddJokeClick: () -> Unit,
+    onJokeClick: (String) -> Unit
 ) {
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(brush = brushBackground)
+            .background(brushBackground)
     ) {
         when {
             isLoading -> Loader(modifier = Modifier.align(Alignment.Center))
             jokes.isEmpty() -> JokesEmpty(modifier = Modifier.align(Alignment.Center))
-            else -> JokesList(jokes)
+            else -> JokesListContent(jokes, onJokeClick)
         }
 
         FloatingActionButton(
@@ -96,10 +107,24 @@ fun JokesList(
                 .align(Alignment.BottomEnd)
                 .padding(16.dp)
         ) {
-            Text("+", color = Color.Black)
+            Text("+", color = Color.White)
         }
     }
 }
+
+@Composable
+fun JokesListContent(jokes: List<Joke>, onJokeClick: (String) -> Unit) {
+    LazyColumn(
+        modifier = Modifier
+            .padding(top = 10.dp, start = 10.dp, end = 10.dp)
+            .fillMaxSize()
+    ) {
+        items(jokes) { joke ->
+            JokeItem(joke = joke, onClick = { onJokeClick(joke.id) })
+        }
+    }
+}
+
 
 @Composable
 fun Loader(modifier: Modifier)
@@ -119,18 +144,7 @@ fun JokesEmpty(modifier: Modifier)
 }
 
 @Composable
-fun JokesList(jokes: List<Joke>){
-    LazyColumn(
-        modifier = Modifier
-            .padding(top = 10.dp, start = 10.dp, end = 10.dp)
-            .fillMaxSize()
-    ) {
-        items(jokes) { JokeItem(it) }
-    }
-}
-
-@Composable
-fun JokeItem(joke: Joke) {
+fun JokeItem(joke: Joke, onClick: (String) -> Unit) {
     val context = LocalContext.current
     val activity = context as AppCompatActivity
 
@@ -140,26 +154,35 @@ fun JokeItem(joke: Joke) {
             .padding(2.dp)
             .shadow(shape = RoundedCornerShape(10.dp), elevation = 20.dp)
             .background(WhiteSoft, shape = RoundedCornerShape(10.dp))
-            .clickable {
-                val jokeFragment = JokeFragment.newInstance(joke.id)
-                activity.supportFragmentManager
-                    .beginTransaction()
-                    .replace(R.id.fragment_container, jokeFragment)
-                    .addToBackStack(null)
-                    .commit()
-            }
+            .clickable { onClick(joke.id) }
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(10.dp)
         ) {
-            Text(
-                modifier = Modifier.padding(bottom = 5.dp),
-                text = joke.category,
-                fontSize = 12.sp,
-                color = Color.Blue
-            )
+            Row()
+            {
+                Text(
+                    modifier = Modifier.padding(end = 10.dp),
+                    text = joke.category,
+                    fontSize = 12.sp,
+                    color = Color.Blue
+                )
+                Text(
+                    text = if (joke.isFromNetwork) "From Network" else "Local",
+                    color = if (joke.isFromNetwork) Color.Green else Color.Gray,
+                    fontSize = 10.sp,
+                    modifier = Modifier
+                        .align(Alignment.Top)
+                        .padding(4.dp)
+                        .background(
+                            color = if (joke.isFromNetwork) Color(0xFFE8F5E9) else Color(0xFFF5F5F5),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                )
+            }
             Text(
                 modifier = Modifier.padding(bottom = 5.dp),
                 text = joke.question,
