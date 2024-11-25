@@ -1,23 +1,42 @@
 package com.example.t_homework_01
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.t_homework_01.data.Joke
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class JokeViewModel : ViewModel() {
+    private val _jokes = MutableLiveData<List<Joke>>(emptyList())
+    val jokes: LiveData<List<Joke>> = _jokes
 
-    private val _category = MutableLiveData("No Category")
-    val category: LiveData<String> = _category
+    private val _isLoading = MutableLiveData(false)
+    val isLoading: LiveData<Boolean> = _isLoading
 
-    private val _question = MutableLiveData("No Question")
-    val question: LiveData<String> = _question
+    init {
+        loadJokes()
+    }
 
-    private val _answer = MutableLiveData("No Answer")
-    val answer: LiveData<String> = _answer
+    fun loadJokes() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            delay(1000)
+            _jokes.value = JokeRepository.getJokes()
+            _isLoading.value = false
+        }
+    }
 
-    fun loadJokeData(category: String, question: String, answer: String) {
-        _category.value = category
-        _question.value = question
-        _answer.value = answer
+    fun addJoke(joke: Joke) {
+        JokeRepository.addJoke(joke)
+        _jokes.value = JokeRepository.getJokes()
+        Log.d("JokeViewModel", "Добавлена шутка: $joke")
+    }
+
+    fun getJokeById(id: String): Joke? {
+        return _jokes.value?.find { it.id == id }
     }
 }
+
