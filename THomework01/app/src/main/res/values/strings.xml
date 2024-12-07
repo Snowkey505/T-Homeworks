@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">T-Homework_01</string>
+    <string name="network">From Network</string>
+    <string name="local">Local</string>
 </resources>

@@ -18,16 +18,22 @@ class JokeViewModel : ViewModel() {
     private val _isLoading = MutableLiveData(false)
     val isLoading: LiveData<Boolean> = _isLoading
 
+    private var currentPage = 1
+    private val jokesPerPage = 10
+
     init {
         loadNetworkJokes()
     }
 
     fun loadNetworkJokes() {
+        if (_isLoading.value == true) return
+
+        _isLoading.value = true
         viewModelScope.launch {
-            _isLoading.value = true
             try {
-                val networkJokes = JokeRepository.getJokesFromNetwork()
-                _networkJokes.value = networkJokes
+                val networkJokes = JokeRepository.getJokesFromNetwork(page = currentPage, amount = jokesPerPage)
+                _networkJokes.value = _networkJokes.value.orEmpty() + networkJokes
+                currentPage++
             } catch (e: Exception) {
                 Log.e("JokeViewModel", "Error loading network jokes: ${e.message}")
             } finally {

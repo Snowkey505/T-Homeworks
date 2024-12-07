@@ -14,8 +14,8 @@ object JokeRepository {
 
     private val api = retrofit.create(JokeApiService::class.java)
 
-    suspend fun getJokesFromNetwork(): List<Joke> = withContext(Dispatchers.IO) {
-        val response = api.fetchJokes()
+    suspend fun getJokesFromNetwork(page: Int, amount: Int): List<Joke> = withContext(Dispatchers.IO) {
+        val response = api.fetchJokes(amount = amount, blacklistFlags = "nsfw,religious,political,racist,sexist,explicit")
         response.jokes.map { networkJoke ->
             Joke(
                 category = networkJoke.category,

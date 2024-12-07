@@ -19,4 +19,5 @@ data class JokeResponse(
 data class NetworkJoke(
     val category: String,
     val setup: String,
-    val delivery: String)
+    val delivery: String
+)

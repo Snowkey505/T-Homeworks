@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -15,12 +14,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -29,7 +30,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -75,6 +76,9 @@ class JokesFragment : Fragment() {
                             .replace(R.id.fragment_container, jokeFragment)
                             .addToBackStack(null)
                             .commit()
+                    },
+                    onScrollEnd = {
+                        jokeViewModel.loadNetworkJokes()
                     }
                 )
             }
@@ -88,7 +92,8 @@ fun JokesList(
     jokes: List<Joke>,
     isLoading: Boolean,
     onAddJokeClick: () -> Unit,
-    onJokeClick: (String) -> Unit
+    onJokeClick: (String) -> Unit,
+    onScrollEnd: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -98,7 +103,7 @@ fun JokesList(
         when {
             isLoading -> Loader(modifier = Modifier.align(Alignment.Center))
             jokes.isEmpty() -> JokesEmpty(modifier = Modifier.align(Alignment.Center))
-            else -> JokesListContent(jokes, onJokeClick)
+            else -> JokesListContent(jokes, onJokeClick, onScrollEnd)
         }
 
         FloatingActionButton(
@@ -113,8 +118,24 @@ fun JokesList(
 }
 
 @Composable
-fun JokesListContent(jokes: List<Joke>, onJokeClick: (String) -> Unit) {
+fun JokesListContent(
+    jokes: List<Joke>,
+    onJokeClick: (String) -> Unit,
+    onScrollEnd: () -> Unit
+) {
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(listState.firstVisibleItemIndex, listState.layoutInfo.totalItemsCount) {
+        val totalItemCount = listState.layoutInfo.totalItemsCount
+        val lastVisibleItemIndex = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+
+        if (lastVisibleItemIndex == totalItemCount - 1) {
+            onScrollEnd()
+        }
+    }
+
     LazyColumn(
+        state = listState,
         modifier = Modifier
             .padding(top = 10.dp, start = 10.dp, end = 10.dp)
             .fillMaxSize()
@@ -125,16 +146,13 @@ fun JokesListContent(jokes: List<Joke>, onJokeClick: (String) -> Unit) {
     }
 }
 
-
 @Composable
-fun Loader(modifier: Modifier)
-{
+fun Loader(modifier: Modifier) {
     CircularProgressIndicator(modifier)
 }
 
 @Composable
-fun JokesEmpty(modifier: Modifier)
-{
+fun JokesEmpty(modifier: Modifier) {
     Text(
         text = "Шутки вышли из чата, добавьте новую!",
         modifier,
@@ -145,9 +163,6 @@ fun JokesEmpty(modifier: Modifier)
 
 @Composable
 fun JokeItem(joke: Joke, onClick: (String) -> Unit) {
-    val context = LocalContext.current
-    val activity = context as AppCompatActivity
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -170,7 +185,9 @@ fun JokeItem(joke: Joke, onClick: (String) -> Unit) {
                     color = Color.Blue
                 )
                 Text(
-                    text = if (joke.isFromNetwork) "From Network" else "Local",
+                    text = if (joke.isFromNetwork) stringResource(R.string.network) else stringResource(
+                        R.string.local
+                    ),
                     color = if (joke.isFromNetwork) Color.Green else Color.Gray,
                     fontSize = 10.sp,
                     modifier = Modifier

@@ -26,6 +26,7 @@ import com.example.t_homework_01.ui.theme.OrangeSoft
 import com.example.t_homework_01.ui.theme.WhiteSoft
 import com.example.t_homework_01.ui.theme.YellowSoft
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.stringResource
 
 private val colorsBackground = listOf(YellowSoft, OrangeSoft)
 private val brushBackground = Brush.verticalGradient(colors = colorsBackground)
@@ -37,7 +38,7 @@ fun JokeDetailsPreview(){
         category = "Category",
         question = "Is it a question?",
         answer = "Yes!",
-        source = "From Network"
+        source = stringResource(R.string.network)
     )
 }
 
