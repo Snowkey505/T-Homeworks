@@ -6,12 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.activityViewModels
 
 class AddJokeFragment : Fragment() {
 
-    private val addJokeViewModel: AddJokeViewModel by viewModels()
+    private val jokeViewModel: JokeViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -21,16 +20,13 @@ class AddJokeFragment : Fragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 AddJokeScreen(
-                    viewModel = addJokeViewModel,
                     onJokeAdded = { joke ->
+                        jokeViewModel.addJoke(joke)
                         parentFragmentManager.popBackStack()
-                        (activity as? MainActivity)?.let {
-                            val jokeViewModel = ViewModelProvider(it)[JokeViewModel::class.java]
-                            jokeViewModel.addJoke(joke)
-                        }
                     }
                 )
             }
         }
     }
 }
+

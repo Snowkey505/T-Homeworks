@@ -49,14 +49,13 @@ class JokesFragment : Fragment() {
     private val jokeViewModel: JokeViewModel by activityViewModels()
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
+        inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         return ComposeView(requireContext()).apply {
             setContent {
-                val localJokes by jokeViewModel.localJokes.observeAsState(emptyList())
                 val networkJokes by jokeViewModel.networkJokes.observeAsState(emptyList())
+                val localJokes by jokeViewModel.localJokes.observeAsState(emptyList())
                 val isLoading by jokeViewModel.isLoading.observeAsState(false)
 
                 val allJokes = localJokes + networkJokes
@@ -145,6 +144,7 @@ fun JokesListContent(
         }
     }
 }
+
 
 @Composable
 fun Loader(modifier: Modifier) {

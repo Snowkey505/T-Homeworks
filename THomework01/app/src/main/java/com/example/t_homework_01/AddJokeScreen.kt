@@ -20,9 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import com.example.t_homework_01.data.Joke
 import com.example.t_homework_01.ui.theme.OrangeSoft
 import com.example.t_homework_01.ui.theme.YellowSoft
@@ -32,7 +29,7 @@ private val colorsBackground = listOf(YellowSoft, OrangeSoft)
 private val brushBackground = Brush.verticalGradient(colors = colorsBackground)
 
 @Composable
-fun AddJokeScreen(viewModel: AddJokeViewModel, onJokeAdded: (Joke) -> Unit) {
+fun AddJokeScreen(onJokeAdded: (Joke) -> Unit) {
     var category by remember { mutableStateOf("") }
     var question by remember { mutableStateOf("") }
     var answer by remember { mutableStateOf("") }
@@ -74,12 +71,14 @@ fun AddJokeScreen(viewModel: AddJokeViewModel, onJokeAdded: (Joke) -> Unit) {
             colors = ButtonDefaults.buttonColors(Color.White),
             onClick = {
                 if (category.isNotEmpty() && question.isNotEmpty() && answer.isNotEmpty()) {
-                    viewModel.addJoke(category, question, answer)
-                    viewModel.newJoke.observeForever {
-                        it?.let { joke ->
-                            onJokeAdded(joke)
-                        }
-                    }
+                    val newJoke = Joke(
+                        id = UUID.randomUUID().toString(),
+                        category = category,
+                        question = question,
+                        answer = answer,
+                        isFromNetwork = false
+                    )
+                    onJokeAdded(newJoke)
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -89,24 +88,5 @@ fun AddJokeScreen(viewModel: AddJokeViewModel, onJokeAdded: (Joke) -> Unit) {
                 color = Color.Black
             )
         }
-    }
-}
-
-
-class AddJokeViewModel : ViewModel() {
-
-    private val _newJoke = MutableLiveData<Joke>()
-    val newJoke: LiveData<Joke> get() = _newJoke
-
-    fun addJoke(category: String, question: String, answer: String) {
-        val joke = Joke(
-            id = UUID.randomUUID().toString(),
-            category = category,
-            question = question,
-            answer = answer,
-            isFromNetwork = false
-        )
-
-        _newJoke.value = joke
     }
 }
