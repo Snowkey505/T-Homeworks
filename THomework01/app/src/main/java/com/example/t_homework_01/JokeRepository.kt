@@ -1,13 +1,32 @@
 package com.example.t_homework_01
 
 import com.example.t_homework_01.data.Joke
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 object JokeRepository {
-    private val jokes = mutableListOf<Joke>()
+    private val retrofit = Retrofit.Builder()
+        .baseUrl("https://v2.jokeapi.dev/")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
 
-    fun addJoke(joke: Joke) {
-        jokes.add(joke)
+    private val api = retrofit.create(JokeApiService::class.java)
+
+    suspend fun getNetworkJokes(page: Int, amount: Int): List<Joke> = withContext(Dispatchers.IO) {
+        val response = api.fetchJokes(amount = amount, blacklistFlags = "nsfw,religious,political,racist,sexist,explicit")
+        response.jokes.map { networkJoke ->
+            Joke(
+                category = networkJoke.category,
+                question = networkJoke.setup,
+                answer = networkJoke.delivery,
+                isFromNetwork = true
+            )
+        }
     }
 
-    fun getJokes(): List<Joke> = jokes
+    fun getLocalJokes(): List<Joke> {
+        return listOf()
+    }
 }

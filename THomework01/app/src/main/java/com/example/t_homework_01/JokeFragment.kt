@@ -4,49 +4,51 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.stringResource
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 
 class JokeFragment : Fragment() {
-    private val jokeViewModel: JokeViewModel by activityViewModels()
-    private var jokeId: String? = null
 
-    companion object {
-        private const val ARG_JOKE_ID = "joke_id"
-
-        fun newInstance(jokeId: String): JokeFragment {
-            val fragment = JokeFragment()
-            val args = Bundle()
-            args.putString(ARG_JOKE_ID, jokeId)
-            fragment.arguments = args
-            return fragment
-        }
-    }
+    private val jokeDetailViewModel: JokeDetailViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        jokeId = arguments?.getString(ARG_JOKE_ID)
-        val joke = jokeId?.let { jokeViewModel.getJokeById(it) }
-
+    ): View {
         return ComposeView(requireContext()).apply {
             setContent {
+                val jokeId = arguments?.getString("jokeId") ?: ""
+                val joke = jokeDetailViewModel.joke.observeAsState().value
+
+                jokeDetailViewModel.loadJokeById(jokeId, (activity as MainActivity).jokeViewModel)
+
                 if (joke != null) {
                     JokeDetails(
                         category = joke.category,
                         question = joke.question,
-                        answer = joke.answer
+                        answer = joke.answer,
+                        source = if (joke.isFromNetwork) stringResource(R.string.network) else stringResource(R.string.local)
                     )
                 } else {
-                    Text("Шутка не найдена", modifier = Modifier.fillMaxSize(), color = Color.Black)
+                    Loader(modifier = Modifier)
                 }
             }
         }
     }
+
+    companion object {
+        fun newInstance(jokeId: String): JokeFragment {
+            val fragment = JokeFragment()
+            val bundle = Bundle().apply {
+                putString("jokeId", jokeId)
+            }
+            fragment.arguments = bundle
+            return fragment
+        }
+    }
 }
+
