@@ -9,6 +9,7 @@ import com.example.t_homework_01.data.Joke
 import kotlinx.coroutines.launch
 
 class JokeViewModel : ViewModel() {
+
     private val _localJokes = MutableLiveData<List<Joke>>(emptyList())
     val localJokes: LiveData<List<Joke>> = _localJokes
 
@@ -21,6 +22,9 @@ class JokeViewModel : ViewModel() {
     private var currentPage = 1
     private val jokesPerPage = 10
 
+    private val _allJokes = MutableLiveData<List<Joke>>(emptyList())
+    val allJokes: LiveData<List<Joke>> = _allJokes
+
     init {
         loadNetworkJokes()
     }
@@ -31,8 +35,9 @@ class JokeViewModel : ViewModel() {
         _isLoading.value = true
         viewModelScope.launch {
             try {
-                val networkJokes = JokeRepository.getJokesFromNetwork(page = currentPage, amount = jokesPerPage)
+                val networkJokes = JokeRepository.getNetworkJokes(page = currentPage, amount = jokesPerPage)
                 _networkJokes.value = _networkJokes.value.orEmpty() + networkJokes
+                _allJokes.value = _allJokes.value.orEmpty() + networkJokes
                 currentPage++
             } catch (e: Exception) {
                 Log.e("JokeViewModel", "Error loading network jokes: ${e.message}")
@@ -42,10 +47,16 @@ class JokeViewModel : ViewModel() {
         }
     }
 
+    fun getJokeById(id: String): Joke? {
+        return _allJokes.value?.firstOrNull { it.id == id }
+    }
+
     fun addJoke(joke: Joke) {
         viewModelScope.launch {
-            val currentJokes = _localJokes.value.orEmpty()
-            _localJokes.value = currentJokes + joke
+            val updatedLocalJokes = _localJokes.value.orEmpty() + joke
+            _localJokes.value = updatedLocalJokes
+            val updatedAllJokes = _allJokes.value.orEmpty() + joke
+            _allJokes.value = updatedAllJokes
         }
     }
 }

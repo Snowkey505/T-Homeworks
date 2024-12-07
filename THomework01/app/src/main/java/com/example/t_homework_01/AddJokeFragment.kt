@@ -33,10 +33,4 @@ class AddJokeFragment : Fragment() {
             }
         }
     }
-
-    companion object {
-        fun newInstance(): AddJokeFragment {
-            return AddJokeFragment()
-        }
-    }
 }

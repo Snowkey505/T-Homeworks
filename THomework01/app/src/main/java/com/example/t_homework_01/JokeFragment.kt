@@ -4,14 +4,15 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.material3.Text
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.t_homework_01.data.Joke
 
-
 class JokeFragment : Fragment() {
+
     companion object {
         fun newInstance(jokeId: String): JokeFragment {
             val fragment = JokeFragment()
@@ -33,22 +34,21 @@ class JokeFragment : Fragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 val jokeId = arguments?.getString("jokeId")
-                joke = getJokeById(jokeId ?: "")
 
-                JokeDetails(
-                    category = joke.category,
-                    question = joke.question,
-                    answer = joke.answer,
-                    source = if (joke.isFromNetwork) stringResource(R.string.network) else stringResource(R.string.local)
-                )
+                jokeId?.let {
+                    jokeViewModel.getJokeById(it)?.let { foundJoke ->
+                        joke = foundJoke
+                        JokeDetails(
+                            category = joke.category,
+                            question = joke.question,
+                            answer = joke.answer,
+                            source = if (joke.isFromNetwork) stringResource(R.string.network) else stringResource(R.string.local)
+                        )
+                    } ?: run {
+                        Text(text = "Шутка не найдена")
+                    }
+                }
             }
         }
-    }
-
-    private fun getJokeById(id: String): Joke {
-        val allJokes =
-            jokeViewModel.localJokes.value.orEmpty() + jokeViewModel.networkJokes.value.orEmpty()
-        return allJokes.firstOrNull { it.id == id }
-            ?: throw IllegalArgumentException("Joke not found")
     }
 }
