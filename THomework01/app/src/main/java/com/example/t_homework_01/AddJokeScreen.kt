@@ -1,10 +1,11 @@
 package com.example.t_homework_01
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -12,7 +13,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -20,58 +20,64 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import com.example.t_homework_01.data.Joke
 import com.example.t_homework_01.ui.theme.OrangeSoft
 import com.example.t_homework_01.ui.theme.YellowSoft
+import java.util.UUID
 
 private val colorsBackground = listOf(YellowSoft, OrangeSoft)
 private val brushBackground = Brush.verticalGradient(colors = colorsBackground)
 
 @Composable
-fun AddJokeScreen(
-    viewModel: AddJokeViewModel,
-    onJokeAdded: (Joke) -> Unit
-) {
-    val category by viewModel.category.observeAsState("")
-    val question by viewModel.question.observeAsState("")
-    val answer by viewModel.answer.observeAsState("")
+fun AddJokeScreen(onJokeAdded: (Joke) -> Unit) {
+    var category by remember { mutableStateOf("") }
+    var question by remember { mutableStateOf("") }
+    var answer by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(brush = brushBackground)
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+            .padding(16.dp)
     ) {
         TextField(
             value = category,
-            onValueChange = { viewModel.updateCategory(it) },
-            label = { Text("Категория") },
+            onValueChange = { category = it },
+            label = { Text("Category") },
             modifier = Modifier.fillMaxWidth()
         )
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         TextField(
             value = question,
-            onValueChange = { viewModel.updateQuestion(it) },
-            label = { Text("Вопрос") },
+            onValueChange = { question = it },
+            label = { Text("Question") },
             modifier = Modifier.fillMaxWidth()
         )
 
+        Spacer(modifier = Modifier.height(8.dp))
+
         TextField(
             value = answer,
-            onValueChange = { viewModel.updateAnswer(it) },
-            label = { Text("Ответ") },
+            onValueChange = { answer = it },
+            label = { Text("Answer") },
             modifier = Modifier.fillMaxWidth()
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         Button(
             colors = ButtonDefaults.buttonColors(Color.White),
             onClick = {
-                if (viewModel.isInputValid()) {
-                    val newJoke = viewModel.getNewJoke()
+                if (category.isNotEmpty() && question.isNotEmpty() && answer.isNotEmpty()) {
+                    val newJoke = Joke(
+                        id = UUID.randomUUID().toString(),
+                        category = category,
+                        question = question,
+                        answer = answer,
+                        isFromNetwork = false
+                    )
                     onJokeAdded(newJoke)
                 }
             },
@@ -82,43 +88,5 @@ fun AddJokeScreen(
                 color = Color.Black
             )
         }
-    }
-}
-
-
-class AddJokeViewModel : ViewModel() {
-    private val _category = MutableLiveData("")
-    val category: LiveData<String> = _category
-
-    private val _question = MutableLiveData("")
-    val question: LiveData<String> = _question
-
-    private val _answer = MutableLiveData("")
-    val answer: LiveData<String> = _answer
-
-    fun updateCategory(newCategory: String) {
-        _category.value = newCategory
-    }
-
-    fun updateQuestion(newQuestion: String) {
-        _question.value = newQuestion
-    }
-
-    fun updateAnswer(newAnswer: String) {
-        _answer.value = newAnswer
-    }
-
-    fun isInputValid(): Boolean {
-        return !_category.value.isNullOrBlank() &&
-                !_question.value.isNullOrBlank() &&
-                !_answer.value.isNullOrBlank()
-    }
-
-    fun getNewJoke(): Joke {
-        return Joke(
-            category = _category.value ?: "",
-            question = _question.value ?: "",
-            answer = _answer.value ?: ""
-        )
     }
 }

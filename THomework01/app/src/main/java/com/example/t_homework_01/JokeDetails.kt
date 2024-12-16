@@ -18,7 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -27,6 +26,7 @@ import com.example.t_homework_01.ui.theme.OrangeSoft
 import com.example.t_homework_01.ui.theme.WhiteSoft
 import com.example.t_homework_01.ui.theme.YellowSoft
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.stringResource
 
 private val colorsBackground = listOf(YellowSoft, OrangeSoft)
 private val brushBackground = Brush.verticalGradient(colors = colorsBackground)
@@ -37,12 +37,18 @@ fun JokeDetailsPreview(){
     JokeDetails(
         category = "Category",
         question = "Is it a question?",
-        answer = "Yes!"
+        answer = "Yes!",
+        source = stringResource(R.string.network)
     )
 }
 
 @Composable
-fun JokeDetails(category: String, question: String, answer: String) {
+fun JokeDetails(
+    category: String,
+    question: String,
+    answer: String,
+    source: String
+) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -71,6 +77,7 @@ fun JokeDetails(category: String, question: String, answer: String) {
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(10.dp))
+
                 LazyColumn(
                     modifier = Modifier
                         .wrapContentHeight()
@@ -98,6 +105,13 @@ fun JokeDetails(category: String, question: String, answer: String) {
                         )
                     }
                 }
+
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = "Source: $source",
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
             }
         }
     }
