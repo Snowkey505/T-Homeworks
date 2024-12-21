@@ -35,7 +35,7 @@ class JokeViewModel : ViewModel() {
         _isLoading.value = true
         viewModelScope.launch {
             try {
-                val networkJokes = JokeRepository.getNetworkJokes(page = currentPage, amount = jokesPerPage)
+                val networkJokes = JokeRepository.getNetworkJokes(amount = jokesPerPage)
                 _networkJokes.value = _networkJokes.value.orEmpty() + networkJokes
                 _allJokes.value = _allJokes.value.orEmpty() + networkJokes
                 currentPage++
