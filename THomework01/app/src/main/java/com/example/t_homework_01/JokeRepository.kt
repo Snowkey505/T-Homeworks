@@ -1,12 +1,12 @@
 package com.example.t_homework_01
 
-import com.example.t_homework_01.data.Joke
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import androidx.lifecycle.LiveData
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.UUID
 
-object JokeRepository {
+
+class JokeRepository(private val jokeDao: JokeDao) {
     private val retrofit = Retrofit.Builder()
         .baseUrl("https://v2.jokeapi.dev/")
         .addConverterFactory(GsonConverterFactory.create())
@@ -14,19 +14,35 @@ object JokeRepository {
 
     private val api = retrofit.create(JokeApiService::class.java)
 
-    suspend fun getNetworkJokes(page: Int, amount: Int): List<Joke> = withContext(Dispatchers.IO) {
-        val response = api.fetchJokes(amount = amount, blacklistFlags = "nsfw,religious,political,racist,sexist,explicit")
-        response.jokes.map { networkJoke ->
-            Joke(
-                category = networkJoke.category,
-                question = networkJoke.setup,
-                answer = networkJoke.delivery,
-                isFromNetwork = true
-            )
-        }
+    val localJokes: LiveData<List<LocalJokeEntity>> = jokeDao.getLocalJokes()
+    val cachedJokes: LiveData<List<CachedJokeEntity>> = jokeDao.getCachedJokes()
+
+    suspend fun addLocalJoke(joke: LocalJokeEntity) {
+        jokeDao.insertLocalJoke(joke)
     }
 
-    fun getLocalJokes(): List<Joke> {
-        return listOf()
+    suspend fun updateCache(networkJokes: List<CachedJokeEntity>) {
+        jokeDao.insertCachedJokes(networkJokes)
+    }
+
+    suspend fun clearOldCache(validTime: Long) {
+        jokeDao.clearOldCache(validTime)
+    }
+
+    fun fetchCachedJokes(): LiveData<List<CachedJokeEntity>> {
+        return cachedJokes
+    }
+
+    suspend fun fetchNetworkJokes(): List<CachedJokeEntity> {
+        val response = api.fetchJokes()
+        return response.jokes.map { joke ->
+            CachedJokeEntity(
+                id = UUID.randomUUID().toString(),
+                category = joke.category,
+                question = joke.setup,
+                answer = joke.delivery,
+                timestamp = System.currentTimeMillis()
+            )
+        }
     }
 }

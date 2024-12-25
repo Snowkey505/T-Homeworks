@@ -1,5 +1,7 @@
 package com.example.t_homework_01
 
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -11,6 +13,7 @@ interface JokeApiService {
         @Query("amount") amount: Int = 10
     ): JokeResponse
 }
+
 
 data class JokeResponse(
     val jokes: List<NetworkJoke>

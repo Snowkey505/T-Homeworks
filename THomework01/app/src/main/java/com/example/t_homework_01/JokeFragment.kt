@@ -24,7 +24,7 @@ class JokeFragment : Fragment() {
                 val jokeId = arguments?.getString("jokeId") ?: ""
                 val joke = jokeDetailViewModel.joke.observeAsState().value
 
-                jokeDetailViewModel.loadJokeById(jokeId, (activity as MainActivity).jokeViewModel)
+                jokeDetailViewModel.loadJokeById(jokeId)
 
                 if (joke != null) {
                     JokeDetails(

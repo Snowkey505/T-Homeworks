@@ -12,14 +12,12 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        jokeViewModel = ViewModelProvider(this).get(JokeViewModel::class.java)
+        jokeViewModel = ViewModelProvider(this, JokeViewModelFactory(application)).get(JokeViewModel::class.java)
 
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, JokesFragment())
                 .commit()
         }
-
-        jokeViewModel.loadNetworkJokes()
     }
 }

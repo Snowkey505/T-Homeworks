@@ -54,32 +54,40 @@ class JokesFragment : Fragment() {
     ): View {
         return ComposeView(requireContext()).apply {
             setContent {
-                val networkJokes by jokeViewModel.networkJokes.observeAsState(emptyList())
                 val localJokes by jokeViewModel.localJokes.observeAsState(emptyList())
+                val cachedJokes by jokeViewModel.cachedJokes.observeAsState(emptyList())
                 val isLoading by jokeViewModel.isLoading.observeAsState(false)
+                val statusMessage by jokeViewModel.statusMessage.observeAsState("")
 
-                val allJokes = localJokes + networkJokes
+                val allJokes = (localJokes.map {
+                    Joke(it.id, it.category, it.question, it.answer, isFromNetwork = false)
+                } + cachedJokes.map {
+                    Joke(it.id, it.category, it.question, it.answer, isFromNetwork = true)
+                }).distinctBy { it.id }
 
-                JokesList(
-                    jokes = allJokes,
-                    isLoading = isLoading,
-                    onAddJokeClick = {
-                        parentFragmentManager.beginTransaction()
-                            .replace(R.id.fragment_container, AddJokeFragment())
-                            .addToBackStack(null)
-                            .commit()
-                    },
-                    onJokeClick = { jokeId ->
-                        val jokeFragment = JokeFragment.newInstance(jokeId)
-                        parentFragmentManager.beginTransaction()
-                            .replace(R.id.fragment_container, jokeFragment)
-                            .addToBackStack(null)
-                            .commit()
-                    },
-                    onScrollEnd = {
-                        jokeViewModel.loadNetworkJokes()
+                Box(modifier = Modifier.fillMaxSize()) {
+                    JokesList(
+                        jokes = allJokes,
+                        isLoading = isLoading,
+                        onAddJokeClick = {
+                            parentFragmentManager.beginTransaction()
+                                .replace(R.id.fragment_container, AddJokeFragment())
+                                .addToBackStack(null)
+                                .commit()
+                        },
+                        onJokeClick = { /* Handle joke click */ },
+                        onScrollEnd = { jokeViewModel.loadJokes() }
+                    )
+
+                    if (statusMessage.isNotEmpty()) {
+                        Text(
+                            text = statusMessage,
+                            color = Color.Red,
+                            modifier = Modifier.align(Alignment.BottomCenter)
+                                .padding(8.dp)
+                        )
                     }
-                )
+                }
             }
         }
     }
