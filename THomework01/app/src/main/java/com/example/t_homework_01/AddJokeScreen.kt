@@ -37,38 +37,15 @@ fun AddJokeScreen(onJokeAdded: (Joke) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(brush = brushBackground)
             .padding(16.dp)
     ) {
-        TextField(
-            value = category,
-            onValueChange = { category = it },
-            label = { Text("Category") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
+        TextField(value = category, onValueChange = { category = it }, label = { Text("Category") })
         Spacer(modifier = Modifier.height(8.dp))
-
-        TextField(
-            value = question,
-            onValueChange = { question = it },
-            label = { Text("Question") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
+        TextField(value = question, onValueChange = { question = it }, label = { Text("Question") })
         Spacer(modifier = Modifier.height(8.dp))
-
-        TextField(
-            value = answer,
-            onValueChange = { answer = it },
-            label = { Text("Answer") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
+        TextField(value = answer, onValueChange = { answer = it }, label = { Text("Answer") })
         Spacer(modifier = Modifier.height(16.dp))
-
         Button(
-            colors = ButtonDefaults.buttonColors(Color.White),
             onClick = {
                 if (category.isNotEmpty() && question.isNotEmpty() && answer.isNotEmpty()) {
                     val newJoke = Joke(
@@ -80,13 +57,9 @@ fun AddJokeScreen(onJokeAdded: (Joke) -> Unit) {
                     )
                     onJokeAdded(newJoke)
                 }
-            },
-            modifier = Modifier.fillMaxWidth()
+            }
         ) {
-            Text(
-                text = "Добавить шутку",
-                color = Color.Black
-            )
+            Text("Add Joke")
         }
     }
 }

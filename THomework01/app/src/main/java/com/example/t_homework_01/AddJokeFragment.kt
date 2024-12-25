@@ -21,7 +21,7 @@ class AddJokeFragment : Fragment() {
             setContent {
                 AddJokeScreen(
                     onJokeAdded = { joke ->
-                        jokeViewModel.addJoke(joke)
+                        jokeViewModel.addLocalJoke(joke)
                         parentFragmentManager.popBackStack()
                     }
                 )
@@ -29,4 +29,3 @@ class AddJokeFragment : Fragment() {
         }
     }
 }
-

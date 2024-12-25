@@ -1,62 +1,89 @@
 package com.example.t_homework_01
 
+import android.app.Application
 import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.t_homework_01.data.Joke
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import java.util.UUID
 
-class JokeViewModel : ViewModel() {
+class JokeViewModelFactory(private val application: Application) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(JokeViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return JokeViewModel(application) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+}
 
-    private val _localJokes = MutableLiveData<List<Joke>>(emptyList())
-    val localJokes: LiveData<List<Joke>> = _localJokes
 
-    private val _networkJokes = MutableLiveData<List<Joke>>(emptyList())
-    val networkJokes: LiveData<List<Joke>> = _networkJokes
+
+class JokeViewModel(application: Application) : AndroidViewModel(application) {
+    private val jokeDao = JokeDatabase.getInstance(application).jokeDao()
+    private val repository = JokeRepository(jokeDao)
+
+    val localJokes: LiveData<List<LocalJokeEntity>> = repository.localJokes
+    val cachedJokes: LiveData<List<CachedJokeEntity>> = repository.cachedJokes
 
     private val _isLoading = MutableLiveData(false)
     val isLoading: LiveData<Boolean> = _isLoading
 
-    private var currentPage = 1
-    private val jokesPerPage = 10
+    private val _statusMessage = MutableLiveData<String>()
+    val statusMessage: LiveData<String> = _statusMessage
 
-    private val _allJokes = MutableLiveData<List<Joke>>(emptyList())
-    val allJokes: LiveData<List<Joke>> = _allJokes
-
-    init {
-        loadNetworkJokes()
+    fun addLocalJoke(joke: Joke) {
+        viewModelScope.launch {
+            repository.addLocalJoke(LocalJokeEntity(joke.id, joke.category, joke.question, joke.answer))
+        }
     }
 
-    fun loadNetworkJokes() {
-        if (_isLoading.value == true) return
-
+    fun loadJokes() {
         _isLoading.value = true
         viewModelScope.launch {
             try {
-                val networkJokes = JokeRepository.getNetworkJokes(amount = jokesPerPage)
-                _networkJokes.value = _networkJokes.value.orEmpty() + networkJokes
-                _allJokes.value = _allJokes.value.orEmpty() + networkJokes
-                currentPage++
+                repository.localJokes.value?.let { localJokesList ->
+                    if (localJokesList.isNullOrEmpty()) {
+                        repository.cachedJokes.value?.let { cachedJokesList ->
+                            if (cachedJokesList.isNullOrEmpty()) {
+                                loadNetworkJokes()  // Загрузка шуток из сети
+                            } else {
+                                _statusMessage.value = "Шутки из кэша (сеть недоступна)"
+                            }
+                        }
+                    } else {
+                        _statusMessage.value = "Шутки из локальной базы данных"
+                    }
+                }
             } catch (e: Exception) {
-                Log.e("JokeViewModel", "Error loading network jokes: ${e.message}")
+                _statusMessage.value = "Ошибка при загрузке шуток: ${e.message}"
             } finally {
                 _isLoading.value = false
             }
         }
     }
 
-    fun getJokeById(id: String): Joke? {
-        return _allJokes.value?.firstOrNull { it.id == id }
+    private suspend fun loadNetworkJokes() {
+        try {
+            val networkJokes = repository.fetchNetworkJokes()
+            repository.updateCache(networkJokes)
+            _statusMessage.value = "Шутки загружены из сети"
+        } catch (e: Exception) {
+            _statusMessage.value = "Ошибка при загрузке данных с сети: ${e.message}"
+        }
     }
 
-    fun addJoke(joke: Joke) {
+    fun clearOldCache() {
         viewModelScope.launch {
-            val updatedLocalJokes = _localJokes.value.orEmpty() + joke
-            _localJokes.value = updatedLocalJokes
-            val updatedAllJokes = _allJokes.value.orEmpty() + joke
-            _allJokes.value = updatedAllJokes
+            repository.clearOldCache(System.currentTimeMillis() - 24 * 60 * 60 * 1000)
         }
     }
 }
